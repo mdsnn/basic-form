@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import FastAPI
 from sqlmodel import SQLModel, Session, create_engine, select
 from fastapi.middleware.cors import CORSMiddleware
@@ -29,3 +30,9 @@ def create_name(name_create: NameCreate):
         session.commit()
         session.refresh(name)
     return name
+
+@app.get("/names/", response_model=List[Name])
+def list_names():
+    with Session(engine) as session:
+        names = session.exec(select(Name)).all()
+        return names
