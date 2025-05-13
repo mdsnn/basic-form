@@ -1,5 +1,5 @@
 from typing import List
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from sqlmodel import SQLModel, Session, create_engine, select
 from fastapi.middleware.cors import CORSMiddleware
 from models import Name, NameCreate
@@ -36,3 +36,16 @@ def list_names():
     with Session(engine) as session:
         names = session.exec(select(Name)).all()
         return names
+
+@app.put("/names/{name_id}", response_model=Name)
+def update_name(name_id: int, name_update: NameCreate):
+    with Session(engine) as session:
+        name = session.get(Name, name_id)
+        if not name:
+            raise HTTPException(status_code=404, detail="Name not found")
+
+        name.name = name_update.name
+        session.add(name)
+        session.commit()
+        session.refresh(name)
+        return name
