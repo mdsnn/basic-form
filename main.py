@@ -49,3 +49,13 @@ def update_name(name_id: int, name_update: NameCreate):
         session.commit()
         session.refresh(name)
         return name
+
+@app.delete("/names/{name_id}")
+def delete_name(name_id: int):
+    with Session(engine) as session:
+        name = session.get(Name, name_id)
+        if not name:
+            raise HTTPException(status_code=404, detail="Name not found")
+        session.delete(name)
+        session.commit()
+        return {"ok": True}
